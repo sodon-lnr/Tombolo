@@ -64,7 +64,7 @@ server.on('connection', socket => {
 
 app.set('trust proxy', 1);
 
-// Limit the rate of requests to 400 per 15 minutes
+// Limit the rate of requests to RATE_LIMIT_REQUEST_MAX per 15 minutes
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: process.env.RATE_LIMIT_REQUEST_MAX,

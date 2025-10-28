@@ -1,4 +1,4 @@
-FROM node:20-alpine as build
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
@@ -29,5 +29,8 @@ COPY nginx/conf.d/nginx.conf.template /etc/nginx/conf.d/nginx.conf.template
 COPY nginx/run_nginx.sh /etc/nginx/run_nginx.sh
 
 RUN ["chmod", "+x", "/etc/nginx/run_nginx.sh"]
-# Entry point is set on docker-compose, uncomment if docker-compose is not used
-# ENTRYPOINT ["sh", "/etc/nginx/run_nginx.sh", "${HOST_HOSTNAME}"]
+
+EXPOSE 80
+
+# Start nginx using the run script
+ENTRYPOINT ["sh", "/etc/nginx/run_nginx.sh", "localhost"]

@@ -24,3 +24,4 @@ tombolo_docs/.docusaurus/*
 e2e_tests/test-results
 e2e_tests/playwright-report
 e2e_tests/state.json
+k8s/secrets.yaml

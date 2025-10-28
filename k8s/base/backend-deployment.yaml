@@ -1,0 +1,239 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tombolo-backend
+  labels:
+    app: tombolo-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tombolo-backend
+  template:
+    metadata:
+      labels:
+        app: tombolo-backend
+    spec:
+      containers:
+        - name: tombolo-backend
+          image: tombolo-backend:latest
+          imagePullPolicy: Never # Use local images for development
+          ports:
+            - containerPort: 3001
+          env:
+            # 1. Instance Configuration
+            - name: INSTANCE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: INSTANCE_NAME
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: NODE_ENV
+            - name: NODE_LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: NODE_LOG_LEVEL
+
+            # 2. Host, port and web URL configuration
+            - name: HOSTNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: HOSTNAME
+            - name: SERVER_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: SERVER_PORT
+            - name: HTTP_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: HTTP_PORT
+            - name: HTTPS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: HTTPS_PORT
+            - name: WEB_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: WEB_URL
+
+            # 3. SSL Certificate Configuration (optional)
+            - name: CERT_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: CERT_PATH
+            - name: CERTIFICATE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: CERTIFICATE_NAME
+                  optional: true
+            - name: CERTIFICATE_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: CERTIFICATE_KEY
+                  optional: true
+
+            # 4. Database Configuration
+            - name: DB_HOSTNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: DB_HOSTNAME
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: DB_PORT
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: DB_NAME
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: tombolo-secrets
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tombolo-secrets
+                  key: DB_PASSWORD
+            - name: MYSQL_SSL_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: MYSQL_SSL_ENABLED
+                  optional: true
+
+            # 5. Security/Authentication
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: tombolo-secrets
+                  key: JWT_SECRET
+            - name: JWT_REFRESH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: tombolo-secrets
+                  key: JWT_REFRESH_SECRET
+            - name: CSRF_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: tombolo-secrets
+                  key: CSRF_SECRET
+            - name: ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: tombolo-secrets
+                  key: ENCRYPTION_KEY
+
+            # 6. OAuth 2.0 (optional)
+            - name: TENENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: TENENT_ID
+                  optional: true
+            - name: CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: CLIENT_ID
+                  optional: true
+            - name: CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: tombolo-secrets
+                  key: CLIENT_SECRET
+                  optional: true
+            - name: REDIRECT_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: REDIRECT_URI
+                  optional: true
+
+            # 7. Email Configuration
+            - name: EMAIL_SMTP_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: EMAIL_SMTP_HOST
+                  optional: true
+            - name: EMAIL_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: EMAIL_PORT
+                  optional: true
+            - name: EMAIL_SENDER
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: EMAIL_SENDER
+            - name: EMAIL_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: EMAIL_USER
+                  optional: true
+            - name: EMAIL_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: tombolo-secrets
+                  key: EMAIL_PASS
+                  optional: true
+
+            # 10. Test Configuration
+            - name: RATE_LIMIT_REQUEST_MAX
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: RATE_LIMIT_REQUEST_MAX
+            - name: TEST_MODE
+              valueFrom:
+                configMapKeyRef:
+                  name: tombolo-config
+                  key: TEST_MODE
+
+          livenessProbe:
+            httpGet:
+              path: /api/status
+              port: 3001
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /api/status
+              port: 3001
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tombolo-backend-service
+spec:
+  selector:
+    app: tombolo-backend
+  type: NodePort
+  ports:
+    - port: 3001
+      targetPort: 3001
+      nodePort: 30001 # Access at localhost:30001

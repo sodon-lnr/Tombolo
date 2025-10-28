@@ -26,5 +26,9 @@ COPY . app
 WORKDIR /app
 
 RUN npm install -g node-gyp sequelize-cli pm2 && npm install
-# Entry point is set on docker-compose, uncomment if docker-compose is not used
-# ENTRYPOINT ["sh", "/app/docker-entry.sh", "mysql_db", "3306"]
+
+# Expose the server port
+EXPOSE 3001
+
+# Start the server with PM2
+CMD ["pm2-runtime", "start", "server.js"]

@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tombolo-config
+data:
+  # 1. Instance Configuration
+  INSTANCE_NAME: "tombolo_k8s"
+  NODE_ENV: "development"
+  NODE_LOG_LEVEL: "info"
+
+  # 2. Host, port and web URL configuration
+  HOSTNAME: "localhost"
+  SERVER_PORT: "3001"
+  HTTP_PORT: "3000"
+  HTTPS_PORT: "443"
+  WEB_URL: "http://localhost:30080"
+
+  # 3. SSL Certificate Configuration (Nginx)
+  CERT_PATH: "/certs"
+  CERTIFICATE_NAME: ""
+  CERTIFICATE_KEY: ""
+
+  # 4. Database Configuration - USE KUBERNETES MYSQL SERVICE
+  MYSQL_SSL_ENABLED: ""
+  DB_PORT: "3306"
+  DB_NAME: "tombolo"
+  DB_HOSTNAME: "mysql-service" # Kubernetes MySQL service
+
+  # 6. OAuth 2.0 (Azure) Configuration (optional - leave empty if not using)
+  TENENT_ID: ""
+  CLIENT_ID: ""
+  REDIRECT_URI: ""
+
+  # 7. Email Configuration
+  EMAIL_SMTP_HOST: ""
+  EMAIL_PORT: ""
+  EMAIL_SENDER: "donotreply@tombolo.com"
+  EMAIL_USER: ""
+
+  # 10. Test Configuration
+  RATE_LIMIT_REQUEST_MAX: "4000"
+  TEST_MODE: "false"

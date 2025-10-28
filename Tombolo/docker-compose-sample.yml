@@ -1,4 +1,3 @@
-version: "3"
 services:
   web:
     build:
@@ -12,7 +11,13 @@ services:
     volumes:
       - ${CERT_PATH}:/etc/nginx/certs/
     depends_on:
-      - mysql_db
+      node:
+        condition: service_started
+      mysql_db:
+        condition: service_started
+    environment: # Used for nginx conf
+      - BACKEND_HOST=node
+      - BACKEND_PORT=3001
     env_file:
       - .env
     entrypoint: ["sh", "/etc/nginx/run_nginx.sh", "${HOSTNAME}"]
